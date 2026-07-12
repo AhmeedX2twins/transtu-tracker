@@ -14,12 +14,31 @@ if (!connectionString) {
 const sql = postgres(connectionString, { ssl: "require" });
 
 function translateSql(content) {
-  return content
+  let sqlText = content
     // SQLite primary key auto-increment to Postgres SERIAL
     .replace(/INTEGER PRIMARY KEY AUTOINCREMENT/g, "SERIAL PRIMARY KEY")
     // SQLite datetime('now') DEFAULT values to Postgres CURRENT_TIMESTAMP
     .replace(/DEFAULT\s+\(datetime\('now'\)\)/gi, "DEFAULT CURRENT_TIMESTAMP")
     .replace(/created_at\s+TEXT/gi, "created_at TIMESTAMP WITH TIME ZONE");
+
+  // Reorder: staff_users must be created before driver_alerts in Postgres due to foreign keys
+  const staffStart = sqlText.indexOf("CREATE TABLE IF NOT EXISTS staff_users");
+  if (staffStart !== -1) {
+    const staffEnd = sqlText.indexOf(");", staffStart) + 2;
+    const staffSql = sqlText.slice(staffStart, staffEnd);
+    // Remove staffSql from original position
+    sqlText = sqlText.slice(0, staffStart) + sqlText.slice(staffEnd);
+    // Find where driver_alerts starts
+    const alertsStart = sqlText.indexOf("CREATE TABLE IF NOT EXISTS driver_alerts");
+    if (alertsStart !== -1) {
+      sqlText = sqlText.slice(0, alertsStart) + staffSql + "\n\n" + sqlText.slice(alertsStart);
+    } else {
+      // Fallback: put it at the top
+      sqlText = staffSql + "\n\n" + sqlText;
+    }
+  }
+
+  return sqlText;
 }
 
 async function init() {
