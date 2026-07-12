@@ -1,0 +1,10 @@
+node_modules
+dist
+server/transtu.db
+server/transtu.db-*
+server/uploads/*
+!server/uploads/.gitkeep
+turso-test.db
+turso-test.db-*
+.env
+.vercel

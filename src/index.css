@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * TRANSTU Tracker brand layer — official TRANSTU identity.
+ * Green #00843D · Yellow #F2B500 · Blue #0078C8 · light UI, 8-pt grid,
+ * radii 8/12/18/24, soft shadows only, Inter + Noto Sans Arabic.
+ * (Brand colors themselves are declared in tailwind.config.js as tt-*.)
+ * ──────────────────────────────────────────────────────────────────────────── */
+@layer base {
+  html[lang] body.tt-body {
+    background-color: #f7f9f8;
+    color: #1f2933;
+    color-scheme: light;
+    font-family:
+      "Inter",
+      "Noto Sans Arabic",
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  html[dir="rtl"] body.tt-body {
+    font-family: "Noto Sans Arabic", "Inter", system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .tt-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  }
+  .tt-press {
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .tt-press:active {
+    transform: scale(0.98);
+  }
+  .tt-fade-in {
+    animation: tt-fade 0.28s ease both;
+  }
+  @keyframes tt-fade {
+    from {
+      opacity: 0.001;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .tt-pulse {
+    animation: tt-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes tt-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(0, 132, 61, 0.45);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(0, 132, 61, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tt-fade-in,
+    .tt-pulse,
+    .tt-press {
+      animation: none;
+      transition: none;
+    }
+  }
+  /* Leaflet vehicle marker */
+  .tt-marker {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 9999px;
+    background: #00843d;
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+  .tt-marker.is-user {
+    background: #0078c8;
+    width: 20px;
+    height: 20px;
+    border-width: 3px;
+  }
+}
