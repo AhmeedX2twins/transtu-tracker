@@ -75,7 +75,7 @@ export async function getReportStatuses(refs: string[]): Promise<ReportStatus[]>
 // ── Staff auth ────────────────────────────────────────────────────────────
 export async function driverLogin(employee_id: string, pin: string) {
   return j<{ ok: boolean; token?: string; name?: string; on_duty?: boolean }>(
-    await fetch("/api/auth/driver", {
+    await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ employee_id, pin }),
@@ -85,7 +85,7 @@ export async function driverLogin(employee_id: string, pin: string) {
 
 export async function directionLogin(email: string, password: string) {
   return j<{ ok: boolean; token?: string; name?: string }>(
-    await fetch("/api/auth/direction", {
+    await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),

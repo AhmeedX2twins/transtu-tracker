@@ -8,3 +8,5 @@ turso-test.db
 turso-test.db-*
 .env
 .vercel
+
+.vercel
