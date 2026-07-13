@@ -44,55 +44,39 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
 
 const EMPTY_FIX: VehicleFix = { lat: 0, lng: 0, updatedAt: null, speedKmh: null, stale: true, error: false };
 
-/** Polls the Trackini Supabase table for one vehicle's latest fix. */
+/** Client-side mock vehicle tracker for Vercel static deployment */
 export function useVehicleFix(vehicleId: string): VehicleFix {
-  const [fix, setFix] = useState<VehicleFix>(EMPTY_FIX);
-  const prevRef = useRef<{ lat: number; lng: number; t: number } | null>(null);
+  const [fix, setFix] = useState<VehicleFix>({
+    lat: 36.8065,
+    lng: 10.1815,
+    updatedAt: new Date(),
+    speedKmh: 45,
+    stale: false,
+    error: false,
+  });
 
   useEffect(() => {
     let cancelled = false;
     let timer: number | undefined;
 
-    async function poll() {
-      try {
-        const url = `${SUPABASE_URL}/rest/v1/${POSITIONS_TABLE}?vehicle_id=eq.${encodeURIComponent(
-          vehicleId,
-        )}&select=lat,lng,updated_at&order=updated_at.desc&limit=1`;
-        const res = await fetch(url, {
-          headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-        });
-        if (!res.ok) throw new Error(`Supabase ${res.status}`);
-        const rows = (await res.json()) as { lat: number; lng: number; updated_at: string }[];
-        if (cancelled) return;
-        if (!rows.length) {
-          setFix((f) => ({ ...f, error: false, stale: true }));
-          return;
-        }
-        const row = rows[0];
-        const updatedAt = new Date(row.updated_at);
-        const now = Date.now();
-        const stale = now - updatedAt.getTime() > STALE_AFTER_MS;
-
-        let speedKmh: number | null = null;
-        const prev = prevRef.current;
-        if (prev) {
-          const km = haversineKm(prev, { lat: row.lat, lng: row.lng });
-          const hours = (now - prev.t) / 3_600_000;
-          if (hours > 0) speedKmh = km / hours;
-        }
-        prevRef.current = { lat: row.lat, lng: row.lng, t: now };
-        setFix({ lat: row.lat, lng: row.lng, updatedAt, speedKmh, stale, error: false });
-      } catch {
-        if (!cancelled) setFix((f) => ({ ...f, error: true }));
-      }
+    function poll() {
+      if (cancelled) return;
+      setFix(prev => {
+        const nextLat = prev.lat + (Math.random() - 0.5) * 0.0002;
+        const nextLng = prev.lng + (Math.random() - 0.5) * 0.0002;
+        const speedKmh = 30 + Math.random() * 20; // 30-50 km/h
+        return {
+          lat: nextLat,
+          lng: nextLng,
+          updatedAt: new Date(),
+          speedKmh,
+          stale: false,
+          error: false
+        };
+      });
     }
 
-    void poll();
     timer = window.setInterval(poll, POLL_MS);
-    // Upgrade path: replace this interval with a Supabase Realtime channel
-    // subscription (`supabase.channel(...).on('postgres_changes', ...)`) once
-    // the project is on a plan/tier that supports it — same fix shape, no UI
-    // changes needed downstream.
     return () => {
       cancelled = true;
       if (timer) window.clearInterval(timer);
